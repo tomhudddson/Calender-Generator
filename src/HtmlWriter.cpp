@@ -21,7 +21,46 @@ HtmlWriter::~HtmlWriter()
 
 }
 
-void HtmlWriter::singleTag(const TagType tagType)
+void HtmlWriter::writeTag(const TagType tagType, const unsigned int flag)
+{
+    if (flag != OPEN_TAG && flag != CLOSE_TAG)
+    {
+        std::cout << "Incorrect tag flag! Use either OPEN_TAG or CLOSE_TAG" 
+                  << std::endl;
+        return;
+    }
+
+    if (flag == CLOSE_TAG && m_openTags <= 0)
+    {
+        std::cout << "No open tags to close" << std::endl;
+        return;
+    }
+
+    switch (tagType)
+    {
+    case TagType::HTML:
+        (flag == OPEN_TAG) ? writeString("<html>") : writeString("</html>");
+        break;
+
+    case TagType::HEAD:
+        (flag == OPEN_TAG) ? writeString("<head>") : writeString("</head>");
+        break;
+    
+    case TagType::BODY:
+        (flag == OPEN_TAG) ? writeString("<body>") : writeString("</body>");
+        break;
+
+    default:
+        // No valid open tag found so return here to prevent the function
+        // reaching its end and opening or closing a valid tag. 
+        std::cout << "Invalid tag given!" << std::endl;
+        return;
+    }
+
+    (flag == OPEN_TAG) ? m_openTags++ : m_openTags--;
+}
+
+void HtmlWriter::specialTag(const TagType tagType)
 {
     switch (tagType)
     {
@@ -33,64 +72,6 @@ void HtmlWriter::singleTag(const TagType tagType)
             std::cout << "Unknown single TagType." << std::endl;
             break;
     }
-}
-
-void HtmlWriter::openTag(const TagType tagType)
-{
-    switch (tagType)
-    {
-        case TagType::HTML:
-            writeString("<html>");
-            break;
-
-        case TagType::HEAD:
-            writeString("<head>");
-            break;
-
-        case TagType::BODY:
-            writeString("<body>");
-            break;
-
-        default:
-            // No valid open tag found so return here to prevent the function
-            // reaching its end and opening a valid tag. 
-            std::cout << "Invalid opening tag given!" << std::endl;
-            return;
-    }
-
-    m_openTags++;
-}
-
-void HtmlWriter::closeTag(const TagType tagType)
-{
-    if (m_openTags <= 0)
-    {
-        std::cout << "No open tags to close" << std::endl;
-        return;
-    }
-
-    switch (tagType)
-    {
-        case TagType::HTML:
-            writeString("</html>");
-            break;
-
-        case TagType::HEAD:
-            writeString("</head>");
-            break;
-
-        case TagType::BODY:
-            writeString("</body>");
-            break;
-
-        default:
-            // No valid open tag found so return here to prevent the function
-            // reaching its end and opening a valid tag. 
-            std::cout << "Invalid closing tag given!" << std::endl;
-            return;
-    }
-
-    m_openTags--;
 }
 
 void HtmlWriter::writeString(const std::string& s)

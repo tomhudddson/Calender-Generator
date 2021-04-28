@@ -5,12 +5,16 @@
 #include <fstream>
 #include <stack>
 
+#define OPEN_TAG    1u
+#define CLOSE_TAG   2u
+
 typedef enum
 {
     DOCTYPE,
     HTML,
     HEAD,
-    BODY
+    BODY,
+    P
 } TagType;
 
 typedef enum 
@@ -36,9 +40,8 @@ public:
     HtmlWriter(const std::string& filepath);
     ~HtmlWriter();
 
-    void singleTag(const TagType tagType);
-    void openTag(const TagType tagType);
-    void closeTag(const TagType tagType);
+    void writeTag(const TagType type, const unsigned int flag);
+    void specialTag(const TagType tagType); 
 
 private:
     std::string m_filepath;
