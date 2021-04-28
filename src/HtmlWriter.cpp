@@ -1,6 +1,9 @@
 #include "HtmlWriter.h"
 
 #include <iostream>
+#include <iomanip>
+
+#define TAB_SIZE  4
 
 HtmlWriter::HtmlWriter(const std::string& filepath)
     : m_filepath(filepath),
@@ -37,20 +40,21 @@ void HtmlWriter::openTag(const TagType tagType)
     switch (tagType)
     {
         case TagType::HTML:
-            writeString("<html>\n");
+            writeString("<html>");
             break;
 
         case TagType::HEAD:
-            writeString("<head>\n");
+            writeString("<head>");
             break;
 
         case TagType::BODY:
-            writeString("<body>\n");
+            writeString("<body>");
             break;
 
         default:
             // No valid open tag found so return here to prevent the function
             // reaching its end and opening a valid tag. 
+            std::cout << "Invalid opening tag given!" << std::endl;
             return;
     }
 
@@ -68,20 +72,21 @@ void HtmlWriter::closeTag(const TagType tagType)
     switch (tagType)
     {
         case TagType::HTML:
-            writeString("</html>\n");
+            writeString("</html>");
             break;
 
         case TagType::HEAD:
-            writeString("</head>\n");
+            writeString("</head>");
             break;
 
         case TagType::BODY:
-            writeString("</body>\n");
+            writeString("</body>");
             break;
 
         default:
             // No valid open tag found so return here to prevent the function
             // reaching its end and opening a valid tag. 
+            std::cout << "Invalid closing tag given!" << std::endl;
             return;
     }
 
@@ -91,6 +96,6 @@ void HtmlWriter::closeTag(const TagType tagType)
 void HtmlWriter::writeString(const std::string& s)
 {
     m_hfos.open(m_filepath, std::ios::app);
-    m_hfos << s;
+    m_hfos << std::string(m_openTags * TAB_SIZE, ' ') << s << "\n";
     m_hfos.close();
 }
