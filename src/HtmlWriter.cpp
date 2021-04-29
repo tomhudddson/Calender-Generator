@@ -1,7 +1,7 @@
 #include "HtmlWriter.h"
 
 #include <iostream>
-#include <iomanip>
+#include <sstream>
 
 #define TAB_SIZE  4
 
@@ -21,7 +21,9 @@ HtmlWriter::~HtmlWriter()
 
 }
 
-void HtmlWriter::writeTag(const TagType tagType, const unsigned int flag)
+void HtmlWriter::writeTag(const TagType tagType,
+                        const unsigned int flag,
+                        const AttributeList& attributeList)
 {
     if (flag != OPEN_TAG && flag != CLOSE_TAG)
     {
@@ -36,6 +38,8 @@ void HtmlWriter::writeTag(const TagType tagType, const unsigned int flag)
         return;
     }
 
+    if (flag == CLOSE_TAG) { m_openTags--; }
+
     switch (tagType)
     {
     case TagType::HTML:
@@ -49,6 +53,18 @@ void HtmlWriter::writeTag(const TagType tagType, const unsigned int flag)
     case TagType::BODY:
         (flag == OPEN_TAG) ? writeString("<body>") : writeString("</body>");
         break;
+    
+    case TagType::TABLE:
+        (flag == OPEN_TAG) ? writeString(createOpenTag("table", attributeList)) : writeString("</table");
+        break;
+
+    case TagType::TR:
+        (flag == OPEN_TAG) ? writeString("<tr>") : writeString("</tr>");
+        break;
+
+    case TagType::TH:
+        (flag == OPEN_TAG) ? writeString("<th>") : writeString("</th>");
+        break;
 
     default:
         // No valid open tag found so return here to prevent the function
@@ -57,7 +73,7 @@ void HtmlWriter::writeTag(const TagType tagType, const unsigned int flag)
         return;
     }
 
-    (flag == OPEN_TAG) ? m_openTags++ : m_openTags--;
+    if (flag == OPEN_TAG) { m_openTags++; }
 }
 
 void HtmlWriter::specialTag(const TagType tagType)
@@ -69,9 +85,26 @@ void HtmlWriter::specialTag(const TagType tagType)
             break;
 
         default:
-            std::cout << "Unknown single TagType." << std::endl;
+            std::cout << "Unknown special TagType." << std::endl;
             break;
     }
+}
+
+std::string HtmlWriter::createOpenTag(const std::string& tag,
+                                const AttributeList& attributes) const
+{
+    std::stringstream ss;
+
+    ss << "<" << tag << " ";
+
+    for (const auto& a : attributes)
+    {
+        ss << a << " ";
+    }
+
+    ss << ">";
+
+    return ss.str();
 }
 
 void HtmlWriter::writeString(const std::string& s)
