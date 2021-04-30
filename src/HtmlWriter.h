@@ -17,7 +17,8 @@ typedef enum
     BODY,
     TABLE,
     TR,
-    TH
+    TH,
+    H2
 } TagType;
 
 
@@ -26,6 +27,8 @@ class HtmlWriter
 public:
     HtmlWriter(const std::string& filepath);
     ~HtmlWriter();
+
+    void writeTag(const TagType type, const unsigned int flag);
 
     void writeTag(const TagType type, 
                 const unsigned int flag,
@@ -44,9 +47,11 @@ private:
 
     unsigned int m_openTags;
 
+    
+
     std::string createOpenTag(const std::string& tag,
                         const AttributeList& attributes) const;
-                        
+
     void writeString(const std::string& s);
 };
 

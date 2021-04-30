@@ -21,6 +21,11 @@ HtmlWriter::~HtmlWriter()
 
 }
 
+void HtmlWriter::writeTag(const TagType tagType, const unsigned int flag)
+{
+    writeTag(tagType, flag, AttributeList());
+}
+
 void HtmlWriter::writeTag(const TagType tagType,
                         const unsigned int flag,
                         const AttributeList& attributeList)
@@ -43,27 +48,31 @@ void HtmlWriter::writeTag(const TagType tagType,
     switch (tagType)
     {
     case TagType::HTML:
-        (flag == OPEN_TAG) ? writeString("<html>") : writeString("</html>");
+        (flag == OPEN_TAG) ? writeString(createOpenTag("html", attributeList)) : writeString("</html>");
         break;
 
     case TagType::HEAD:
-        (flag == OPEN_TAG) ? writeString("<head>") : writeString("</head>");
+        (flag == OPEN_TAG) ? writeString(createOpenTag("head", attributeList)) : writeString("</head>");
         break;
     
     case TagType::BODY:
-        (flag == OPEN_TAG) ? writeString("<body>") : writeString("</body>");
+        (flag == OPEN_TAG) ? writeString(createOpenTag("body", attributeList)) : writeString("</body>");
         break;
     
     case TagType::TABLE:
-        (flag == OPEN_TAG) ? writeString(createOpenTag("table", attributeList)) : writeString("</table");
+        (flag == OPEN_TAG) ? writeString(createOpenTag("table", attributeList)) : writeString("</table>");
         break;
 
     case TagType::TR:
-        (flag == OPEN_TAG) ? writeString("<tr>") : writeString("</tr>");
+        (flag == OPEN_TAG) ? writeString(createOpenTag("tr", attributeList)) : writeString("</tr>");
         break;
 
     case TagType::TH:
-        (flag == OPEN_TAG) ? writeString("<th>") : writeString("</th>");
+        (flag == OPEN_TAG) ? writeString(createOpenTag("th", attributeList)) : writeString("</th>");
+        break;
+
+    case TagType::H2:
+        (flag == OPEN_TAG) ? writeString(createOpenTag("h2", attributeList)) : writeString("</h2>");
         break;
 
     default:
@@ -93,7 +102,14 @@ void HtmlWriter::specialTag(const TagType tagType)
 std::string HtmlWriter::createOpenTag(const std::string& tag,
                                 const AttributeList& attributes) const
 {
-    std::stringstream ss;
+    std::stringstream ss;   
+
+    if (attributes.nAttributes() == 0) 
+    {
+        // No attributes in this function so simply return the tag.
+        ss << "<" << tag << ">";
+        return ss.str();
+    }
 
     ss << "<" << tag << " ";
 

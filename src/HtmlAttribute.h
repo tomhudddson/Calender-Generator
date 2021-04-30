@@ -33,6 +33,8 @@ public:
     AttributeList();
 
     void addAttribute(const std::string& attribute);
+    size_t nAttributes() const;
+
 
     using constIterator = std::vector<std::string>::const_iterator;
 
