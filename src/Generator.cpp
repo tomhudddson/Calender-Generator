@@ -110,7 +110,8 @@ void Generator::generateYear(HtmlWriter& writer, const unsigned int year)
  *   6  -  -  -  -  -  -  - 
  * 
  * The first row is known as the title row. The second row is known as the 
- * column description row. The '-' contain the actual dates.
+ * column description row. The '-' contain the actual dates and these are known
+ * as calendar cells.
  * 
  * @param     writer  Reference to the HtmlWriter instance that is used to
  *       generate the HTML.
@@ -192,18 +193,33 @@ void Generator::generateMonth(HtmlWriter& writer,
         writer.writeData(std::to_string(i));
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
-        // Week day columns.
+        // Calcaulte the days for only the week days. Days for Saturday and
+        // Sunday must be calculated separately since they have different 
+        // HTML attributes.
         int j = 1;
         for (j; j <= 5; j++)
         {
+            // HTML opening tag for a single calendar cell.
             writer.writeTag(TagType::TH, OPEN_TAG, wkDayColAttributes);
+            
+            // Some of the cells at the beginning of the month may contain days
+            // that belong to the previous month. Therefore, only write
+            // the days of the month into a cell if the date is actually in this
+            // month. Also, stop writing days into cells when the total number
+            // of days in the month has been reached. 
             if (j >= dayOfWeek && dayOfMonth <= nDays)
             {
+                // All overlapping cells from previous month have been dealt
+                // with and the total number of days has not yet been reached,
+                // so write the current day of the month into the next cell.
                 writer.writeData(std::to_string(dayOfMonth));
+                
+                // Get the next day of the week.
                 dayOfMonth++;
                 dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
             }
-            
+
+            // HTML closing tag for a single calendar cell.
             writer.writeTag(TagType::TH, CLOSE_TAG);
         }
         
@@ -217,7 +233,9 @@ void Generator::generateMonth(HtmlWriter& writer,
         }
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
-        // Sunday column.
+        // Sunday column. We don't need to check if all overlapping days 
+        // from the previous month have been accounted for as no month will have
+        // its first day after its first week.
         writer.writeTag(TagType::TH, OPEN_TAG, sunColAttributes);
         if (dayOfMonth <= nDays)
         {
@@ -227,6 +245,7 @@ void Generator::generateMonth(HtmlWriter& writer,
         } 
         writer.writeTag(TagType::TH, CLOSE_TAG);        
 
+        // Closing HTML tag for a single row.
         writer.writeTag(TagType::TR, CLOSE_TAG);
     }
 
