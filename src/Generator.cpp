@@ -252,6 +252,17 @@ void Generator::generateMonth(HtmlWriter& writer,
      */
 }
 
+/**
+ * Generate the HTML code for the title row for any given month. The title row
+ * is the first row in the table which displays a month. It contains a header
+ * displaying the name of the month.
+ * 
+ * @param     writer  Reference to the HtmlWriter instance used to generate
+ *       the static HTML code.
+ * 
+ * @param     month  Month index in the range [0, 11]. January = 0. 
+ *       February = 11.
+ */
 void Generator::generateTitleRow(HtmlWriter& writer, const unsigned int month)
 {
     // HTML attributes for the month title row.
@@ -272,6 +283,22 @@ void Generator::generateTitleRow(HtmlWriter& writer, const unsigned int month)
     writer.writeTag(TagType::TR, CLOSE_TAG);
 }
 
+/**
+ * Generates the HTML code for the column description row. The column 
+ * description row contains the headers for all 8 columns.
+ * 
+ * @param     writer  Reference to the HtmlWriter instance used to generate the
+ *       static HTML code for the column headers.
+ * 
+ * @param     wkColAttributes  Reference to the AttributeList instance
+ *       conaining the HTML attributes for the week number column.
+ * 
+ * @param     satColAttributes  Reference to the AttributeList instance 
+ *       containing the HTML attributes for the saturday column.
+ * 
+ * @param     sunColAttributes  Reference to the AttributeList instance 
+ *       containing the HTML attributes for the sunday column.
+ */
 void Generator::generateColDescriptionRow(HtmlWriter& writer,
                                     AttributeList& wkColAttributes,
                                     AttributeList& satColAttributes,
@@ -308,10 +335,23 @@ void Generator::generateColDescriptionRow(HtmlWriter& writer,
     writer.writeTag(TagType::TR, CLOSE_TAG);
 }
 
+/**
+ * Get the number of days in any given month in any given year. This function
+ * takes into account leap years and will vary the number of days in February
+ * accordingly.
+ * 
+ * @param     year  The year containing the month in question.
+ * 
+ * @param     month  The month in question.
+ * 
+ * @return 
+ *      
+ *      - The number of days in the month in question.
+ */
 unsigned int Generator::getNumberOfDays(const unsigned int year,
-                                    const unsigned int monthIndex)
+                                    const unsigned int month)
 {
-    if (monthIndex == 1)
+    if (month == 1)
     {
         // Given month is February so we must calculate whether it is a leap
         // year or not. Every year that is divisible by 4 is a leap year, except
@@ -325,14 +365,31 @@ unsigned int Generator::getNumberOfDays(const unsigned int year,
 
     // No other month is affected by leap years so simply lookup the number of
     // days.
-    return m_daysInMonths[monthIndex];
+    return m_daysInMonths[month];
 }
 
+/**
+ * This function finds the day of the week for any given day of the year.
+ * It uses Gauss's method for determining the day of the week.
+ * 
+ * @param     day  The day of the month. Note, the days start counting at 1.
+ *       Therefore, the 1st of every month should be passed into this 
+ *       parameter as 1 not 0.
+ * 
+ * @param     month  The month in the year. This parameter differs from the rest
+ *       of the functions in this class in that January = 1 and December = 12.
+ * 
+ * @param     year  The year in question.
+ * 
+ * @return
+ * 
+ *      - The day of the week. Monday = 1, Sunday = 7.
+ */
 unsigned int Generator::getDayOfWeek(const unsigned int day,
                                 const unsigned int month,
                                 unsigned int year)
 {
-    static unsigned int t[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
+    static unsigned int offsets[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
     year -= month < 3;
-    return (year + year/4 - year/100 + year/400 + t[month-1] + day) % 7;
+    return (year + (year / 4) - (year / 100) + (year / 400) + offsets[month - 1] + day) % 7;
 }
