@@ -139,21 +139,17 @@ void Generator::generateMonth(HtmlWriter& writer,
     tableAttributes.addAttribute(R"(width="200")");
 
     // HTML attributes for the week number column, including the column header.
-    AttributeList wkColAttributes;
-    wkColAttributes.addAttribute(R"(style="background-color: #e6e6e6; font-size: 16px; font-weight: normal;")");
+    AttributeList wkColAttributes(R"(style="background-color: #e6e6e6; font-size: 16px; font-weight: normal;")");
 
     // HTML attributes for the saturday column, including the column header 
     // cell.
-    AttributeList satColAttributes;
-    satColAttributes.addAttribute(R"(style="background-color: #ffffcc; font-size: 20px;")");
+    AttributeList satColAttributes(R"(style="background-color: #ffffcc; font-size: 20px;")");
 
     // Html attribute for the sunday column, including the column header.
-    AttributeList sunColAttributes;
-    sunColAttributes.addAttribute(R"(style="background-color: #ffcc99; font-size: 20px;")");
+    AttributeList sunColAttributes(R"(style="background-color: #ffcc99; font-size: 20px;")");
 
     // HTML attribute for the week day cells.
-    AttributeList wkDayColAttributes;
-    wkDayColAttributes.addAttribute(R"(style="font-size: 20px; font-weight: normal;")");
+    AttributeList wkDayColAttributes(R"(style="font-size: 20px; font-weight: normal;")");
 
     /**
      * Start of table block.
@@ -265,8 +261,7 @@ void Generator::generateTitleRow(HtmlWriter& writer, const unsigned int month)
 
     // The month title in the table's title row will be enclosed in a h2 tag.
     // These are the HTML attributes for that h2 tag.
-    AttributeList header2Attributes;
-    header2Attributes.addAttribute(R"(style="padding: 0; margin: 0;")");
+    AttributeList header2Attributes(R"(style="padding: 0; margin: 0;")");
 
     writer.writeTag(TagType::TR, OPEN_TAG);
     writer.writeTag(TagType::TH, OPEN_TAG, titleRowAttributes);
@@ -284,10 +279,7 @@ void Generator::generateColDescriptionRow(HtmlWriter& writer,
 {
    
     // HTML attributes for the week day column header cells.
-    AttributeList wkDayColHeaderAttributes;
-    wkDayColHeaderAttributes.addAttribute(R"(style="background-color: #e6e6e6; font-size: 20px; font-weight: normal;")");
-
-
+    AttributeList wkDayColHeaderAttributes(R"(style="background-color: #e6e6e6; font-size: 20px; font-weight: normal;")");
 
     writer.writeTag(TagType::TR, OPEN_TAG);
 

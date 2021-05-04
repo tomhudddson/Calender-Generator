@@ -31,6 +31,7 @@ class AttributeList
 {
 public:
     AttributeList();
+    AttributeList(const std::string& attribute);
 
     void addAttribute(const std::string& attribute);
     size_t nAttributes() const;

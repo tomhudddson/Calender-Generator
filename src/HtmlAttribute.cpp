@@ -6,6 +6,12 @@ AttributeList::AttributeList()
 
 }
 
+AttributeList::AttributeList(const std::string& attribute)
+    : m_attributes()
+{
+    addAttribute(attribute);
+}
+
 void AttributeList::addAttribute(const std::string& attribute)
 {
     m_attributes.push_back(attribute);
