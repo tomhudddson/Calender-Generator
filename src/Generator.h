@@ -50,6 +50,13 @@ private:
                     const unsigned int wkStart,
                     const unsigned int wkEnd);
 
+    void generateTitleRow(HtmlWriter& writer, const unsigned int month);
+    
+    void generateColDescriptionRow(HtmlWriter& writer,
+                                AttributeList& wkColAttributes,
+                                AttributeList& satColAttributes,
+                                AttributeList& sunColAttributes);                    
+
     unsigned int getNumberOfDays(const unsigned int year,
                             const unsigned int monthIndex);
 
