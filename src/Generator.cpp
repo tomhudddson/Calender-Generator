@@ -1,43 +1,81 @@
 #include "Generator.h"
 
-void Generator::generateCalendar(HtmlWriter& writer)
+#include <iostream>
+
+/**
+ * Minimum supported date is October 1582.
+ */
+#define MIN_YEAR   1582
+#define MIN_MONTH  10   
+
+void Generator::generateCalendar(HtmlWriter& writer, 
+                            const unsigned int year)
 {
-	writer.specialTag(TagType::DOCTYPE);
+    writer.specialTag(TagType::DOCTYPE);
     
     // Start of html block.
-	writer.writeTag(TagType::HTML, OPEN_TAG, AttributeList());
+    writer.writeTag(TagType::HTML, OPEN_TAG, AttributeList());
 
     // Start of head block.
-	writer.writeTag(TagType::HEAD, OPEN_TAG, AttributeList());
+    writer.writeTag(TagType::HEAD, OPEN_TAG, AttributeList());
 
     // End of head block.
-	writer.writeTag(TagType::HEAD, CLOSE_TAG, AttributeList());
+    writer.writeTag(TagType::HEAD, CLOSE_TAG, AttributeList());
 
     // Start of body block.
-	writer.writeTag(TagType::BODY, OPEN_TAG, AttributeList());  
+    writer.writeTag(TagType::BODY, OPEN_TAG, AttributeList());  
 
-    for (int i = 0; i < NUM_MONTHS; i++)
+    // Start of main table block.
+    writer.writeTag(TagType::TABLE, OPEN_TAG);
+
+    int i = (year == 1582) ? year : year - 1;
+
+    for (i; i <= (year + 1); i++)
     {
-        generateMonth(writer, m_months[i], i * 5, 5 + (i * 5));
+        generateYear(writer, i);
     }
 
+    // End of main table block.
+    writer.writeTag(TagType::TABLE, CLOSE_TAG);
+
     // End of the body block.
-	writer.writeTag(TagType::BODY, CLOSE_TAG, AttributeList());
+    writer.writeTag(TagType::BODY, CLOSE_TAG, AttributeList());
 
     // End of the html block.
-	writer.writeTag(TagType::HTML, CLOSE_TAG, AttributeList());
+    writer.writeTag(TagType::HTML, CLOSE_TAG, AttributeList());
 }
 
-void Generator::generateMonth(HtmlWriter& writer, 
-                        const std::string& monthName,
+void Generator::generateYear(HtmlWriter& writer, const unsigned int year)
+{
+    writer.writeTag(TagType::TH, OPEN_TAG);
+
+    writer.writeTag(TagType::H1, OPEN_TAG);
+    writer.writeData(std::to_string(year));
+    writer.writeTag(TagType::H1, CLOSE_TAG);
+
+    int i = (year == 1582) ? 9 : 0;
+
+    for (i; i < NUM_MONTHS; i++)
+    {
+        generateMonth(writer, year, i, 39, 44);
+    }
+
+    writer.writeTag(TagType::TH, CLOSE_TAG);
+}
+
+void Generator::generateMonth(HtmlWriter& writer,
+                        const unsigned int year,
+                        const unsigned int monthIndex,
                         const unsigned int wkStart,
                         const unsigned int wkEnd)
 {
+    const std::string monthName = m_months[monthIndex];
+
     AttributeList tableAttributes;
-	tableAttributes.addAttribute(R"(border="1")");
-	tableAttributes.addAttribute(R"(cellspacing="0")");
-	tableAttributes.addAttribute(R"(cellpadding="4px")");
-	tableAttributes.addAttribute(R"(width="200")");
+    tableAttributes.addAttribute(R"(border="1")");
+    tableAttributes.addAttribute(R"(cellspacing="0")");
+    tableAttributes.addAttribute(R"(cellpadding="4px")");
+    tableAttributes.addAttribute(R"(width="200")");
 
     AttributeList titleRowAttributes;
     titleRowAttributes.addAttribute(R"(style="background-color: #ccffcc")");
@@ -62,7 +100,7 @@ void Generator::generateMonth(HtmlWriter& writer,
     wkDayColAttributes.addAttribute(R"(style="font-size: 20px; font-weight: normal;")");
 
     // Start of table block.
-	writer.writeTag(TagType::TABLE, OPEN_TAG, tableAttributes);
+    writer.writeTag(TagType::TABLE, OPEN_TAG, tableAttributes);
 
     // Title row.
     writer.writeTag(TagType::TR, OPEN_TAG);
@@ -101,6 +139,10 @@ void Generator::generateMonth(HtmlWriter& writer,
     writer.writeTag(TagType::TR, CLOSE_TAG);
 
     // Start of calendar rows.
+    const unsigned int nDays = getNumberOfDays(year, monthIndex);
+    unsigned int dayOfMonth = 1;
+    unsigned int dayOfWeek = getDayOfWeek(dayOfMonth, monthIndex + 1, year);
+
     for (int i = wkStart; i <= wkEnd; i++)
     {
         writer.writeTag(TagType::TR, OPEN_TAG);
@@ -111,26 +153,84 @@ void Generator::generateMonth(HtmlWriter& writer,
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
         // Week day columns.
-        for (int j = 0; j < 5; j++)
+        int j = 1;
+        for (j; j <= 5; j++)
         {
             writer.writeTag(TagType::TH, OPEN_TAG, wkDayColAttributes);
-            writer.writeData("0");
+            if (j >= dayOfWeek && dayOfMonth <= nDays)
+            {
+                writer.writeData(std::to_string(dayOfMonth));
+                dayOfMonth++;
+                dayOfWeek = getDayOfWeek(dayOfMonth, monthIndex + 1, year);
+            }
+            else 
+            {
+               // writer.writeData("");
+            }
+            
             writer.writeTag(TagType::TH, CLOSE_TAG);
         }
         
         // Saturday column.
         writer.writeTag(TagType::TH, OPEN_TAG, satColAttributes);
-        writer.writeData("0");
+        if (j >= dayOfWeek && dayOfMonth <= nDays)
+        {
+            writer.writeData(std::to_string(dayOfMonth));
+            dayOfMonth++;
+            dayOfWeek = getDayOfWeek(dayOfMonth, monthIndex + 1, year);
+        }
+        else 
+        {
+           // writer.writeData("");
+        }
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
         // Sunday column.
         writer.writeTag(TagType::TH, OPEN_TAG, sunColAttributes);
-        writer.writeData("0");
-        writer.writeTag(TagType::TH, CLOSE_TAG);
+        if (dayOfMonth <= nDays)
+        {
+            writer.writeData(std::to_string(dayOfMonth));
+            dayOfMonth++;
+            dayOfWeek = getDayOfWeek(dayOfMonth, monthIndex + 1, year);
+        } 
+        else 
+        {
+            //writer.writeData("");
+        }
+        writer.writeTag(TagType::TH, CLOSE_TAG);        
 
         writer.writeTag(TagType::TR, CLOSE_TAG);
     }
 
     // End of table block.
-	writer.writeTag(TagType::TABLE, CLOSE_TAG, AttributeList());
+    writer.writeTag(TagType::TABLE, CLOSE_TAG, AttributeList());
+}
+
+unsigned int Generator::getNumberOfDays(const unsigned int year,
+                                    const unsigned int monthIndex)
+{
+    if (monthIndex == 1)
+    {
+        // Given month is February so we must calculate whether it is a leap
+        // year or not. Every year that is divisible by 4 is a leap year, except
+        // years that are divisible by 100. However, every 400 years is also a
+        // leap year.
+        if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
+            return 29;
+        else 
+            return 28;
+    }
+
+    // No other month is affected by leap years so simply lookup the number of
+    // days.
+    return m_daysInMonths[monthIndex];
+}
+
+unsigned int Generator::getDayOfWeek(const unsigned int day,
+                                const unsigned int month,
+                                unsigned int year)
+{
+    static unsigned int t[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
+    year -= month < 3;
+    return (year + year/4 - year/100 + year/400 + t[month-1] + day) % 7;
 }

@@ -9,7 +9,7 @@ class Generator
 {
 public:
 
-    void generateCalendar(HtmlWriter& writer);
+    void generateCalendar(HtmlWriter& writer, const unsigned int year);
 
 private:
     const std::string m_months[NUM_MONTHS] = {
@@ -27,10 +27,35 @@ private:
         "December"
     };
 
+    const int m_daysInMonths[NUM_MONTHS] = {
+        31,  // January
+        28,  // Feburary - 29 on a leap year
+        31,  // March,
+        30,  // April,
+        31,  // May,
+        30,  // June,
+        31,  // July,
+        31,  // August
+        30,  // September
+        31,  // October
+        30,  // November,
+        31   // December  
+    };
+
+    void generateYear(HtmlWriter& writer, const unsigned int year);
+
     void generateMonth(HtmlWriter& writer, 
-                    const std::string& monthName,
+                    const unsigned int year,
+                    const unsigned int monthIndex,
                     const unsigned int wkStart,
                     const unsigned int wkEnd);
+
+    unsigned int getNumberOfDays(const unsigned int year,
+                            const unsigned int monthIndex);
+
+    unsigned int getDayOfWeek(const unsigned int day,
+                            const unsigned int month,
+                            unsigned int year);
 };
 
 #endif  // GENERATOR_H

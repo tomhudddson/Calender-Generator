@@ -18,6 +18,7 @@ typedef enum
     TABLE,
     TR,
     TH,
+    H1,
     H2
 } TagType;
 

@@ -71,6 +71,10 @@ void HtmlWriter::writeTag(const TagType tagType,
         (flag == OPEN_TAG) ? writeString(createOpenTag("th", attributeList)) : writeString("</th>");
         break;
 
+    case TagType::H1:
+        (flag == OPEN_TAG) ? writeString(createOpenTag("h1", attributeList)) : writeString("</h1>");
+        break;
+        
     case TagType::H2:
         (flag == OPEN_TAG) ? writeString(createOpenTag("h2", attributeList)) : writeString("</h2>");
         break;
