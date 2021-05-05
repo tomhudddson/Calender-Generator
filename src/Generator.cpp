@@ -209,6 +209,10 @@ void Generator::generateMonth(HtmlWriter& writer,
     RowFill fill = RowFill::EMPTY;
     int lastRowWritten = 0;          // Index of the last row written to.
 
+    // Index for keeping track of which column is being written to. Start
+    // at 1 for monday.
+    int colIndex = 1;
+
     // Populate the calendar row by row.
     for (int i = 0; i < 6; i++)
     {        
@@ -223,18 +227,17 @@ void Generator::generateMonth(HtmlWriter& writer,
         writer.writeData(std::to_string(m_wkNumber));
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
-        // Index for keeping track of which column is being written to. Start
-        // at 1 for monday.
-        int colIndex = 1;
+        colIndex = 1;
 
         // Populate the next 5 columns with the week days.
         for (colIndex; colIndex <= 5; colIndex++)
         {
             writer.writeTag(TagType::TH, OPEN_TAG, wkDayColAttributes);
 
-            // Only write data in the column after the correct day of the week
-            // to give space for the previous months days. Also stop writing 
-            // data after all the days in the month have been written.
+            // Only write data in the cell at the start of the week
+            // to give space for the previous months days that overlap. Also 
+            // stop writing data after all the days in the month have been 
+            // written.
             if (colIndex >= dayOfWeek && dayOfMonth <= daysInMonth)
             {
                 writer.writeData(std::to_string(dayOfMonth));
