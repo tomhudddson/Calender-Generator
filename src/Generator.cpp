@@ -194,10 +194,10 @@ void Generator::generateMonth(HtmlWriter& writer,
         {
             writer.writeTag(TagType::TH, OPEN_TAG, wkDayColAttributes);
 
-            if (dayOfWeek == 0)
+            /*if (dayOfWeek == 0)
             {
                 continue;
-            }
+            }*/
 
             if (j >= dayOfWeek && dayOfMonth <= nDays)
             {
@@ -211,15 +211,15 @@ void Generator::generateMonth(HtmlWriter& writer,
         
         // Saturday column.
         writer.writeTag(TagType::TH, OPEN_TAG, satColAttributes);
-        if (dayOfWeek != 0)
-        {
+        //if (dayOfWeek != 0)
+        //{
             if (j >= dayOfWeek && dayOfMonth <= nDays)
             {
                 writer.writeData(std::to_string(dayOfMonth));
                 dayOfMonth++;
                 dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
             }
-        }
+        //}
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
         // Sunday column. We don't need to check if all overlapping days 
@@ -392,5 +392,6 @@ unsigned int Generator::getDayOfWeek(const unsigned int day,
         year--;
     }
 
-    return (year + (year / 4) - (year / 100) + (year / 400) + offsets[month - 1] + day) % 7;
+    unsigned int dayOfWeek = (year + (year / 4) - (year / 100) + (year / 400) + offsets[month - 1] + day) % 7;
+    return (dayOfWeek == 0) ? 7 : dayOfWeek;
 }
