@@ -8,8 +8,31 @@
 #define MIN_YEAR   1582
 #define MIN_MONTH  9        // October (January = 0) 
 
+/**
+ * Number of weekday columns.
+ */
+#define NUM_WK_DAY_COLS  5
+
+typedef enum RowFill
+{
+    EMPTY,
+    PARTIAL,
+    FULL
+} RowFill;
+
+static void rowPartialOrFull(const bool wkDayWritten,
+                        const bool satWritten,
+                        const bool sunWritten,
+                        RowFill& fill,
+                        int& lastRowWritten,
+                        int& colIndex);
+
+static void adjustWkNumber(unsigned int& wkNumber,
+                        const unsigned int lastRowWritten,
+                        const RowFill fill);
+
 Generator::Generator()
-    : m_wkNumber(1)
+    : m_wkNumber(0)
 {}
 
 /**
@@ -87,15 +110,13 @@ void Generator::generateYear(HtmlWriter& writer, const unsigned int year)
     writer.writeData(std::to_string(year));
     writer.writeTag(TagType::H1, CLOSE_TAG);
 
-    unsigned int currentWk = 1;
-    m_wkNumber = 1;
+    m_wkNumber = 0;
 
     int i = (year == 1582) ? 9 : 0;
 
     for (i; i < NUM_MONTHS; i++)
     {
         generateMonth(writer, year, i);
-        currentWk += 6;
     }
 
     writer.writeTag(TagType::TH, CLOSE_TAG);
@@ -168,7 +189,7 @@ void Generator::generateMonth(HtmlWriter& writer,
                         sunColAttributes);
 
     // Total number of days in the given month. Counting starts from 1.
-    const unsigned int nDays = getNumberOfDays(year, month);
+    const unsigned int daysInMonth = getNumberOfDays(year, month);
 
     // Used to keep track of the current day of the month when calculating days
     // of the week. First day of every month is always 1.
@@ -180,62 +201,88 @@ void Generator::generateMonth(HtmlWriter& writer,
     // to add 1 to the month.
     unsigned int dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
 
-    // Generate the calendar row by row.
+
+    bool wkDayWritten = false;  
+    bool satWritten = false;
+    bool sunWritten = false;
+
+    RowFill fill = RowFill::EMPTY;
+    int lastRowWritten = 0;          // Index of the last row written to.
+
+    // Populate the calendar row by row.
     for (int i = 0; i < 6; i++)
     {        
+        wkDayWritten = false;
+        satWritten = false;
+        sunWritten = false;
+
         writer.writeTag(TagType::TR, OPEN_TAG);
 
+        // Write the week number in the first column.
         writer.writeTag(TagType::TH, OPEN_TAG, wkColAttributes);
         writer.writeData(std::to_string(m_wkNumber));
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
-        int j = 1;
-        for (j; j <= 5; j++)
+        // Index for keeping track of which column is being written to. Start
+        // at 1 for monday.
+        int colIndex = 1;
+
+        // Populate the next 5 columns with the week days.
+        for (colIndex; colIndex <= 5; colIndex++)
         {
             writer.writeTag(TagType::TH, OPEN_TAG, wkDayColAttributes);
 
-            /*if (dayOfWeek == 0)
-            {
-                continue;
-            }*/
-
-            if (j >= dayOfWeek && dayOfMonth <= nDays)
+            // Only write data in the column after the correct day of the week
+            // to give space for the previous months days. Also stop writing 
+            // data after all the days in the month have been written.
+            if (colIndex >= dayOfWeek && dayOfMonth <= daysInMonth)
             {
                 writer.writeData(std::to_string(dayOfMonth));
+                wkDayWritten = true;
                 dayOfMonth++;
+
+                // Get the next day in the week.
                 dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
             }
 
             writer.writeTag(TagType::TH, CLOSE_TAG);
         }
         
-        // Saturday column.
+        // Saturday cell.
         writer.writeTag(TagType::TH, OPEN_TAG, satColAttributes);
-        //if (dayOfWeek != 0)
-        //{
-            if (j >= dayOfWeek && dayOfMonth <= nDays)
-            {
-                writer.writeData(std::to_string(dayOfMonth));
-                dayOfMonth++;
-                dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
-            }
-        //}
-        writer.writeTag(TagType::TH, CLOSE_TAG);
-
-        // Sunday column. We don't need to check if all overlapping days 
-        // from the previous month have been accounted for as no month will have
-        // its first day after its first week.
-        writer.writeTag(TagType::TH, OPEN_TAG, sunColAttributes);
-        if (dayOfMonth <= nDays)
+        if (colIndex >= dayOfWeek && dayOfMonth <= daysInMonth)
         {
             writer.writeData(std::to_string(dayOfMonth));
             dayOfMonth++;
             dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
+            satWritten = true;
+        }
+        writer.writeTag(TagType::TH, CLOSE_TAG);
+
+        // Sunday cell. We don't need to check if all overlapping days 
+        // from the previous month have been accounted for as no month will have
+        // its first day after its first week.
+        writer.writeTag(TagType::TH, OPEN_TAG, sunColAttributes);
+        if (dayOfMonth <= daysInMonth)
+        {
+            writer.writeData(std::to_string(dayOfMonth));
+            dayOfMonth++;
+            dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
+            sunWritten = true;
         } 
         writer.writeTag(TagType::TH, CLOSE_TAG);        
 
-        // Closing HTML tag for a single row.
+        // Closing HTML tag for the row.
         writer.writeTag(TagType::TR, CLOSE_TAG);
+
+        // Determine whether the latest row is completely full or only 
+        // partially full. This is used later to adjust the week number.
+        rowPartialOrFull(wkDayWritten, 
+                        satWritten, 
+                        sunWritten,
+                        fill, 
+                        lastRowWritten,
+                        colIndex);
 
         m_wkNumber++;
     }
@@ -245,6 +292,55 @@ void Generator::generateMonth(HtmlWriter& writer,
     /**
      * End of table block.
      */
+
+    adjustWkNumber(m_wkNumber, lastRowWritten, fill);
+}
+
+/**
+ * Determines whether a row is partially full or full.
+ */
+static void rowPartialOrFull(const bool wkDayWritten,
+                        const bool satWritten,
+                        const bool sunWritten,
+                        RowFill& fill,
+                        int& lastRowWritten,
+                        int& colIndex)
+{
+    if (wkDayWritten || satWritten || sunWritten)
+    {
+        fill = RowFill::PARTIAL;
+        lastRowWritten = colIndex;
+    }
+
+    if (wkDayWritten && satWritten && sunWritten)
+    {
+        fill = RowFill::FULL;
+        lastRowWritten = colIndex;
+    }
+}
+
+/**
+ * This function changes the week number to make the week numbers between months
+ * correct.   
+ */
+static void adjustWkNumber(unsigned int& wkNumber,
+                        const unsigned int lastRowWritten,
+                        const RowFill fill)
+{
+    // If the last row is only partially full, that is, the last day of the 
+    // month is not on a sunday, then the next months first row needs to begin
+    // on that row.
+    if (fill == RowFill::PARTIAL)
+    {
+        wkNumber -= (6 - lastRowWritten);
+    }
+
+    // If the last row is full, that is, the last day of the month is a sunday,
+    // then the next moths first row needs to begin on the next row.
+    if (fill == RowFill::FULL)
+    {
+        wkNumber -= (6 - (lastRowWritten + 1));
+    }
 }
 
 /**
@@ -386,12 +482,18 @@ unsigned int Generator::getDayOfWeek(const unsigned int day,
 {
     static unsigned int offsets[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
 
-    // The Gauss formula uses the preceding year's January and February.
+    // The algorithm uses the previous year when the month is January or 
+    // Feburary.
     if (month < 3)
     {
         year--;
     }
 
     unsigned int dayOfWeek = (year + (year / 4) - (year / 100) + (year / 400) + offsets[month - 1] + day) % 7;
+
+    // This method of calculating the day of the week gives sunday = 0 through
+    // to saturday = 6. This means that sunday is the start of the week. The
+    // rest of this program uses monday as the start of the week so we need
+    // to change sunday to the end of the week, i.e. make sunday = 7.
     return (dayOfWeek == 0) ? 7 : dayOfWeek;
 }

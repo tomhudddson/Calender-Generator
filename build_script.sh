@@ -5,4 +5,4 @@ cmake ..
 make -f Makefile
 cd ..
 cd bin
-./Calender_Generator.exe $1 $2
+#./Calender_Generator.exe
