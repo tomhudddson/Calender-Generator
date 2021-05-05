@@ -49,9 +49,7 @@ private:
 
     void generateMonth(HtmlWriter& writer, 
                     const unsigned int year,
-                    const unsigned int monthIndex,
-                    const unsigned int wkStart,
-                    const unsigned int wkEnd);
+                    const unsigned int monthIndex);
 
     void generateTitleRow(HtmlWriter& writer, const unsigned int month);
     

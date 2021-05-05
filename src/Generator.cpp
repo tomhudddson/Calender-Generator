@@ -9,7 +9,7 @@
 #define MIN_MONTH  9        // October (January = 0) 
 
 Generator::Generator()
-    : m_wkNumber(0)
+    : m_wkNumber(1)
 {}
 
 /**
@@ -88,13 +88,13 @@ void Generator::generateYear(HtmlWriter& writer, const unsigned int year)
     writer.writeTag(TagType::H1, CLOSE_TAG);
 
     unsigned int currentWk = 1;
-    m_wkNumber = 0;
+    m_wkNumber = 1;
 
     int i = (year == 1582) ? 9 : 0;
 
     for (i; i < NUM_MONTHS; i++)
     {
-        generateMonth(writer, year, i, currentWk, currentWk + 5);
+        generateMonth(writer, year, i);
         currentWk += 6;
     }
 
@@ -132,9 +132,7 @@ void Generator::generateYear(HtmlWriter& writer, const unsigned int year)
  */
 void Generator::generateMonth(HtmlWriter& writer,
                         const unsigned int year,
-                        const unsigned int month,
-                        const unsigned int wkStart,
-                        const unsigned int wkEnd)
+                        const unsigned int month)
 {
     // HTML Attributes for the table.
     AttributeList tableAttributes;
@@ -183,54 +181,44 @@ void Generator::generateMonth(HtmlWriter& writer,
     unsigned int dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
 
     // Generate the calendar row by row.
-    for (int i = wkStart; i <= wkEnd; i++)
-    {
-        // HTML table row element opening tag for each row.
+    for (int i = 0; i < 6; i++)
+    {        
         writer.writeTag(TagType::TR, OPEN_TAG);
 
-        // Add a week number cell to this row and insert the current week 
-        // number into it.
         writer.writeTag(TagType::TH, OPEN_TAG, wkColAttributes);
-        writer.writeData(std::to_string(i));
+        writer.writeData(std::to_string(m_wkNumber));
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
-        // Calcaulte the days for only the week days. Days for Saturday and
-        // Sunday must be calculated separately since they have different 
-        // HTML attributes.
         int j = 1;
         for (j; j <= 5; j++)
         {
-            // HTML opening tag for a single calendar cell.
             writer.writeTag(TagType::TH, OPEN_TAG, wkDayColAttributes);
-            
-            // Some of the cells at the beginning of the month may contain days
-            // that belong to the previous month. Therefore, only write
-            // the days of the month into a cell if the date is actually in this
-            // month. Also, stop writing days into cells when the total number
-            // of days in the month has been reached. 
+
+            if (dayOfWeek == 0)
+            {
+                continue;
+            }
+
             if (j >= dayOfWeek && dayOfMonth <= nDays)
             {
-                // All overlapping cells from previous month have been dealt
-                // with and the total number of days has not yet been reached,
-                // so write the current day of the month into the next cell.
                 writer.writeData(std::to_string(dayOfMonth));
-                
-                // Get the next day of the week.
                 dayOfMonth++;
                 dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
             }
 
-            // HTML closing tag for a single calendar cell.
             writer.writeTag(TagType::TH, CLOSE_TAG);
         }
         
         // Saturday column.
         writer.writeTag(TagType::TH, OPEN_TAG, satColAttributes);
-        if (j >= dayOfWeek && dayOfMonth <= nDays)
+        if (dayOfWeek != 0)
         {
-            writer.writeData(std::to_string(dayOfMonth));
-            dayOfMonth++;
-            dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
+            if (j >= dayOfWeek && dayOfMonth <= nDays)
+            {
+                writer.writeData(std::to_string(dayOfMonth));
+                dayOfMonth++;
+                dayOfWeek = getDayOfWeek(dayOfMonth, month + 1, year);
+            }
         }
         writer.writeTag(TagType::TH, CLOSE_TAG);
 
@@ -248,6 +236,8 @@ void Generator::generateMonth(HtmlWriter& writer,
 
         // Closing HTML tag for a single row.
         writer.writeTag(TagType::TR, CLOSE_TAG);
+
+        m_wkNumber++;
     }
 
     writer.writeTag(TagType::TABLE, CLOSE_TAG, AttributeList());
