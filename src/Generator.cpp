@@ -8,6 +8,10 @@
 #define MIN_YEAR   1582
 #define MIN_MONTH  9        // October (January = 0) 
 
+Generator::Generator()
+    : m_wkNumber(0)
+{}
+
 /**
  * Generate a yearly calendar for a given year, its preceding year, and its 
  * following year. The output is written to a static HTML page.
@@ -84,6 +88,7 @@ void Generator::generateYear(HtmlWriter& writer, const unsigned int year)
     writer.writeTag(TagType::H1, CLOSE_TAG);
 
     unsigned int currentWk = 1;
+    m_wkNumber = 0;
 
     int i = (year == 1582) ? 9 : 0;
 
@@ -389,7 +394,6 @@ unsigned int Generator::getDayOfWeek(const unsigned int day,
                                 const unsigned int month,
                                 unsigned int year)
 {
-
     static unsigned int offsets[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
 
     // The Gauss formula uses the preceding year's January and February.
@@ -397,5 +401,6 @@ unsigned int Generator::getDayOfWeek(const unsigned int day,
     {
         year--;
     }
+
     return (year + (year / 4) - (year / 100) + (year / 400) + offsets[month - 1] + day) % 7;
 }

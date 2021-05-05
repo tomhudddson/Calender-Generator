@@ -8,10 +8,13 @@
 class Generator
 {
 public:
+    Generator();
 
     void generateCalendar(HtmlWriter& writer, const unsigned int year);
 
 private:
+    unsigned int m_wkNumber;
+
     const std::string m_months[NUM_MONTHS] = {
         "January",
         "February",

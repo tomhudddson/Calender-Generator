@@ -36,15 +36,12 @@ public:
     void addAttribute(const std::string& attribute);
     size_t nAttributes() const;
 
-
-    using constIterator = std::vector<std::string>::const_iterator;
-
-    constIterator begin() const
+    std::vector<std::string>::const_iterator begin() const
     {
         return m_attributes.begin();
     }
     
-    constIterator end() const
+    std::vector<std::string>::const_iterator end() const
     {
         return m_attributes.end();
     }

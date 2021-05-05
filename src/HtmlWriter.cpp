@@ -123,8 +123,8 @@ void HtmlWriter::writeTag(const TagType tagType,
         break;
 
     default:
-        // No valid open tag found so return here to prevent the function
-        // reaching its end and opening or closing a valid tag. 
+        // No valid open tag found so return here. Not passing a valid tag will
+        // mess up the formatting of the output file.
         std::cout << "Invalid tag given!" << std::endl;
         return;
     }
@@ -203,6 +203,6 @@ void HtmlWriter::writeString(const std::string& s)
 
     // Write the string with correct indentation.
     m_hfos << std::string(m_openTags * TAB_SIZE, ' ') << s << "\n";
-    
+
     m_hfos.close();
 }

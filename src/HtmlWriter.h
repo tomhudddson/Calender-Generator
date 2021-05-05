@@ -30,7 +30,7 @@ typedef enum
 /**
  * This class allows a user to write static HTML code to a HTML file. The output
  * file is set in the constructor. The writeTag function can write either an
- * open tag or a close tag. The function must be called twice to make a full tag.
+ * open tag or a close tag. writeTag must be called twice to make a full tag.
  * The writeData function writes a string to the HTML file and should be called
  * between the first writeTag call and the second writeTag call to wrap the 
  * written data inside the specified tag. Special single tags, such as the 
