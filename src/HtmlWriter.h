@@ -9,9 +9,14 @@
 #define OPEN_TAG    1u
 #define CLOSE_TAG   2u
 
+/**
+ * List of HTML tags the HtmlWriter class supports.
+ */
 typedef enum
 {
+    // Special tag - must use the HtmlWriter::specialTag function to write this.
     DOCTYPE,
+
     HTML,
     HEAD,
     BODY,
@@ -22,7 +27,15 @@ typedef enum
     H2
 } TagType;
 
-
+/**
+ * This class allows a user to write static HTML code to a HTML file. The output
+ * file is set in the constructor. The writeTag function can write either an
+ * open tag or a close tag. The function must be called twice to make a full tag.
+ * The writeData function writes a string to the HTML file and should be called
+ * between the first writeTag call and the second writeTag call to wrap the 
+ * written data inside the specified tag. Special single tags, such as the 
+ * doctype tag, are written using the specialTag function.
+ */
 class HtmlWriter     
 {
 public:
@@ -43,15 +56,20 @@ public:
     }
 
 private:
+    /**
+     * File path of the output HTML file.
+     */
     std::string m_filepath;
+
+    /**
+     * HTML file output stream (hfos).
+     */
     std::ofstream m_hfos;
 
     // Counter to keep track of the number of times a tag has been openeing
     // without being closed. Each open tag that has not been closed corresponds
     // to one indentation level.
     unsigned int m_openTags;
-
-    
 
     std::string createOpenTag(const std::string& tag,
                         const AttributeList& attributes) const;

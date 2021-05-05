@@ -3,6 +3,9 @@
 #include <iostream>
 #include <sstream>
 
+/**
+ * Number of spaces in a tab.
+ */
 #define TAB_SIZE  4
 
 /**
@@ -81,6 +84,8 @@ void HtmlWriter::writeTag(const TagType tagType,
         return;
     }
 
+    // This tag is a closing tag so remove an indentation level before writing
+    // it.
     if (flag == CLOSE_TAG) { m_openTags--; }
 
     switch (tagType)
@@ -127,6 +132,13 @@ void HtmlWriter::writeTag(const TagType tagType,
     if (flag == OPEN_TAG) { m_openTags++; }
 }
 
+/**
+ * This function writes a special tag to the output HTML file. Special tags 
+ * are HTML tags that do not conform to the standard <open_tag>data</close_tag>
+ * format.
+ * 
+ * @param     tagType  The type of HTML tag, must be a special tag.
+ */
 void HtmlWriter::specialTag(const TagType tagType)
 {
     switch (tagType)
@@ -141,6 +153,20 @@ void HtmlWriter::specialTag(const TagType tagType)
     }
 }
 
+/**
+ * Creates a string containing a HTML open tag along with its attributes. The 
+ * tag is in the form <tag attribute_1="a1" attribute_2="a2" ... >.
+ * 
+ * @param     tag  The string representation of the tag. Must be valid HTML and 
+ *       should not include the angle brackets, only the name of the tag.
+ * 
+ * @param     attributes  Reference to an AttributeList instance containing
+ *       the attributes to add to this open tag.
+ * 
+ * @return
+ * 
+ *      - The valid HTML open tag string.
+ */
 std::string HtmlWriter::createOpenTag(const std::string& tag,
                                 const AttributeList& attributes) const
 {
@@ -155,6 +181,7 @@ std::string HtmlWriter::createOpenTag(const std::string& tag,
 
     ss << "<" << tag << " ";
 
+    // Add each attribute to the tag.
     for (const auto& a : attributes)
     {
         ss << a << " ";
@@ -165,9 +192,17 @@ std::string HtmlWriter::createOpenTag(const std::string& tag,
     return ss.str();
 }
 
+/**
+ * Writes a string to the output file with the correct indentation. 
+ */
 void HtmlWriter::writeString(const std::string& s)
-{
+{   
+    // Open output file in append mode - no need to worry about if it has been
+    // cleared as it gets cleared in the constructor.
     m_hfos.open(m_filepath, std::ios::app);
+
+    // Write the string with correct indentation.
     m_hfos << std::string(m_openTags * TAB_SIZE, ' ') << s << "\n";
+    
     m_hfos.close();
 }
