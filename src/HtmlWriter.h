@@ -39,13 +39,16 @@ public:
 
     inline void writeData(const std::string& data)
     {
-    writeString(data);
+        writeString(data);
     }
 
 private:
     std::string m_filepath;
     std::ofstream m_hfos;
 
+    // Counter to keep track of the number of times a tag has been openeing
+    // without being closed. Each open tag that has not been closed corresponds
+    // to one indentation level.
     unsigned int m_openTags;
 
     

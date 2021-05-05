@@ -389,7 +389,13 @@ unsigned int Generator::getDayOfWeek(const unsigned int day,
                                 const unsigned int month,
                                 unsigned int year)
 {
+
     static unsigned int offsets[] = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 };
-    year -= month < 3;
+
+    // The Gauss formula uses the preceding year's January and February.
+    if (month < 3)
+    {
+        year--;
+    }
     return (year + (year / 4) - (year / 100) + (year / 400) + offsets[month - 1] + day) % 7;
 }

@@ -5,6 +5,13 @@
 
 #define TAB_SIZE  4
 
+/**
+ * This constructor initialises a HtmlWriter instance with a filepath. 
+ * 
+ * @param     filepath  The filepath of the output HTML file. All generated
+ *       HTML code will be written to this file. If it already exists, its 
+ *       content will be overwritten. If it does not exist, it will be created.
+ */
 HtmlWriter::HtmlWriter(const std::string& filepath)
     : m_filepath(filepath),
     m_hfos(filepath),
@@ -21,11 +28,42 @@ HtmlWriter::~HtmlWriter()
 
 }
 
+/**
+ * Function overload to allow the user to write a HTML tag without any 
+ * attributes.
+ * 
+ * @param     tagType  The type of HTML tag to write.
+ * 
+ * @param     flag  The tag flag. For an opening tag pass OPEN_TAG. For a 
+ *       closing tag, pass CLOSE_TAG. There are no other flags other than these
+ *       two.
+ */
 void HtmlWriter::writeTag(const TagType tagType, const unsigned int flag)
 {
     writeTag(tagType, flag, AttributeList());
 }
 
+/**
+ * This function writes a HTML tag into the file specified in the constructor.
+ * The open and close tags must be written separately, therefore, to write a 
+ * full tag - <tag>data</tag> This function must be called twice, with a call to
+ * writeData inbetween. This function also formats the code in human-readable
+ * format with correct indentations.
+ * 
+ * This function does not support inline tags in the form 
+ * <tag attribute="foo" />.
+ * 
+ * @param     tagType  Type of the HTML tag.
+ * 
+ * @param     flag  The flag specifying whether the tag is an opening or closing
+ *       tag. For an opening tag pass OPEN_TAG. For a closing tag pass 
+ *       CLOSE_TAG.
+ * 
+ * @param     attributeList  Reference to an AttributeList instance containing
+ *       the attributes for the given tag. If there are no attribtues, simply
+ *       pass an AttributeList with no attribtues added. Note, this parameter
+ *       is ignored if the flag is CLOSE_TAG.
+ */
 void HtmlWriter::writeTag(const TagType tagType,
                         const unsigned int flag,
                         const AttributeList& attributeList)
